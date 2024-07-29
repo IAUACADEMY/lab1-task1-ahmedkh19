@@ -1,0 +1,39 @@
+name: Autograding Tests
+'on':
+- push
+- repository_dispatch
+permissions:
+  checks: write
+  actions: read
+  contents: read
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Product two values
+      id: product-two-values
+      uses: classroom-resources/autograding-io-grader@v1
+      with:
+        test-name: Product two values
+        setup-command: g++ -std=c++11 main.cpp -o calculator
+        command: "./calculator"
+        input: |-
+          5 7
+          2.5 3.0
+          -4 6
+        expected-output: |-
+          The product of 5 and 7 is: 35
+          The product of 2.5 and 3.0 is: 7.5
+          The product of -4 and 6 is: -24
+        comparison-method: contains
+        timeout: 10
+        max-score: 1
+    - name: Autograding Reporter
+      uses: classroom-resources/autograding-grading-reporter@v1
+      env:
+        PRODUCT-TWO-VALUES_RESULTS: "${{steps.product-two-values.outputs.result}}"
+      with:
+        runners: product-two-values
